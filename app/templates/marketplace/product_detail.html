@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ product.title }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    {% set img = product.images[0].image_url if product.images else "https://picsum.photos/seed/item/900/700" %}
+    <img src="{{ img }}" class="img-fluid rounded-4 border" alt="product">
+  </div>
+  <div class="col-lg-6">
+    <div class="d-flex gap-2 align-items-center">
+      <span class="badge text-bg-secondary">{{ product.category.name }}</span>
+      <span class="badge text-bg-light border">{{ product.condition }}</span>
+      <span class="small text-muted">{{ product.city }}</span>
+    </div>
+    <h1 class="h3 mt-2">{{ product.title }}</h1>
+    <div class="h4">${{ "%.2f"|format(product.price) }}</div>
+    <p class="text-muted">{{ product.description }}</p>
+
+    {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('market.cart_add', product_id=product.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-dark">Add to cart</button>
+          <a class="btn btn-outline-dark" href="{{ url_for('market.contact_seller', product_id=product.id) }}">Contact seller</a>
+      </form>
+
+    {% else %}
+      <div class="alert alert-warning mt-3">Login to add to cart or message the seller.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Cart{% endblock %}
+{% block content %}
+<h1 class="h4">Cart</h1>
+
+<div class="table-responsive mt-3">
+  <table class="table align-middle">
+    <thead>
+      <tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+      <tr>
+        <td><a href="{{ url_for('market.product_detail', product_id=it.product.id) }}">{{ it.product.title }}</a></td>
+        <td>${{ "%.2f"|format(it.product.price) }}</td>
+        <td>{{ it.qty }}</td>
+        <td>${{ "%.2f"|format(it.qty * it.product.price) }}</td>
+        <td class="text-end">
+          <form method="post" action="{{ url_for('market.cart_remove', product_id=it.product.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="text-muted">Your cart is empty.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-between align-items-center">
+  <div class="h5 mb-0">Total: ${{ "%.2f"|format(total) }}</div>
+  <form method="post" action="{{ url_for('market.checkout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-dark" {% if not items %}disabled{% endif %}>Checkout (demo)</button>
+  </form>
+</div>
+{% endblock %}

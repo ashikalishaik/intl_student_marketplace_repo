@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<h1 class="h4">Admin dashboard</h1>
+
+<div class="row g-4 mt-1">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white"><strong>Pending product approvals</strong></div>
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead><tr><th>Title</th><th>Seller</th><th>Price</th><th>Created</th><th></th></tr></thead>
+          <tbody>
+            {% for p in pending %}
+            <tr>
+              <td><a href="{{ url_for('market.product_detail', product_id=p.id) }}">{{ p.title }}</a></td>
+              <td class="small text-muted">{{ p.seller.email }}</td>
+              <td>${{ "%.2f"|format(p.price) }}</td>
+              <td class="small text-muted">{{ p.created_at.strftime("%b %d, %Y") }}</td>
+              <td class="text-end d-flex gap-2 justify-content-end">
+                <form method="post" action="{{ url_for('admin.approve_product', product_id=p.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-success">Approve</button>
+                </form>
+                <form method="post" action="{{ url_for('admin.reject_product', product_id=p.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn-sm btn-outline-danger">Reject</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">No pending listings.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <strong>Categories</strong>
+        <a class="btn btn-sm btn-dark" href="{{ url_for('admin.new_category') }}">Add</a>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for c in categories %}
+          <div class="list-group-item d-flex justify-content-between">
+            <span>{{ c.name }}</span>
+            <span class="badge text-bg-secondary">{{ c.type }}</span>
+          </div>
+        {% else %}
+          <div class="list-group-item text-muted">No categories yet. Add some.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-white"><strong>Recently approved listings</strong></div>
+      <div class="list-group list-group-flush">
+        {% for p in approved %}
+          <a class="list-group-item list-group-item-action" href="{{ url_for('market.product_detail', product_id=p.id) }}">
+            <div class="fw-semibold">{{ p.title }}</div>
+            <div class="small text-muted">${{ "%.2f"|format(p.price) }} • {{ p.city }}</div>
+          </a>
+        {% else %}
+          <div class="list-group-item text-muted">No approved listings yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Bookmarks{% endblock %}
+{% block content %}
+<h1 class="h4">My bookmarks</h1>
+<div class="list-group mt-3">
+  {% for a in articles %}
+    <a class="list-group-item list-group-item-action" href="{{ url_for('info.article_detail', article_id=a.id) }}">
+      <div class="fw-semibold">{{ a.title }}</div>
+      <div class="small text-muted">{{ a.category.name }} • {{ a.updated_at.strftime("%b %d, %Y") }}</div>
+    </a>
+  {% else %}
+    <div class="list-group-item text-muted">No bookmarks yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

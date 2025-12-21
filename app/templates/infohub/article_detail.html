@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start">
+  <div>
+    <div class="small text-muted">{{ article.category.name }} • Updated {{ article.updated_at.strftime("%b %d, %Y") }}</div>
+    <h1 class="h3 mt-1">{{ article.title }}</h1>
+    <div class="small text-muted">Tags: {{ article.tags or "—" }}</div>
+  </div>
+
+  {% if current_user.is_authenticated %}
+  <form method="post" action="{{ url_for('info.toggle_bookmark', article_id=article.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <button class="btn btn-sm {% if bookmarked %}btn-dark{% else %}btn-outline-dark{% endif %}">
+      {% if bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="card shadow-sm mt-3">
+  <div class="card-body p-4">
+    <pre class="mb-0 article-pre">{{ article.content }}</pre>
+  </div>
+</div>
+{% endblock %}

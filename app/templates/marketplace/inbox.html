@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Inbox{% endblock %}
+{% block content %}
+<h1 class="h4">Inbox</h1>
+<div class="list-group mt-3">
+  {% for c in convs %}
+    {% set p = products.get(c.product_id) %}
+    <a class="list-group-item list-group-item-action" href="{{ url_for('market.contact_seller', product_id=c.product_id) }}">
+      <div class="fw-semibold">{{ p.title if p else 'Conversation' }}</div>
+      <div class="small text-muted">Conversation #{{ c.id }}</div>
+    </a>
+  {% else %}
+    <div class="list-group-item text-muted">No conversations yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

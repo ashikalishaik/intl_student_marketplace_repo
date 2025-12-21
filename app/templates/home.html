@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Home • StudentMarket{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="p-4 rounded-4 bg-light border">
+      <h1 class="h3 mb-2">International Student Marketplace + Info Hub</h1>
+      <p class="text-muted mb-3">Buy/sell essentials locally, and access curated resources (visa, SSN, housing, jobs).</p>
+      <form class="row g-2" action="{{ url_for('market.products') }}" method="get">
+        <div class="col-md-5">
+          <input class="form-control" name="q" placeholder="Search products (e.g., desk, winter jacket)">
+        </div>
+        <div class="col-md-3">
+          <input class="form-control" name="city" placeholder="City (optional)">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" name="cat">
+            <option value="">All categories</option>
+            {% for c in categories %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 d-flex gap-2">
+          <button class="btn btn-dark" type="submit">Search</button>
+          <a class="btn btn-outline-dark" href="{{ url_for('info.info_home') }}">Browse Info Hub</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mt-4">
+      <h2 class="h5 mb-0">Latest Marketplace Listings</h2>
+      <a class="small" href="{{ url_for('market.products') }}">View all</a>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-3 mt-1">
+      {% for p in products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          {% set img = p.images[0].image_url if p.images else "https://picsum.photos/seed/item/800/600" %}
+          <img src="{{ img }}" class="card-img-top" alt="product">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <span class="badge text-bg-secondary">{{ p.category.name }}</span>
+              <span class="fw-semibold">${{ "%.2f"|format(p.price) }}</span>
+            </div>
+            <h3 class="h6 mt-2 mb-1">{{ p.title }}</h3>
+            <p class="small text-muted mb-0">{{ p.city }}</p>
+          </div>
+          <div class="card-footer bg-white border-0">
+            <a class="btn btn-sm btn-outline-dark w-100" href="{{ url_for('market.product_detail', product_id=p.id) }}">View</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+        <p class="text-muted">No listings yet. Seed sample data or create a listing.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-white">
+        <strong>Latest Info Hub Updates</strong>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for a in articles %}
+          <a class="list-group-item list-group-item-action" href="{{ url_for('info.article_detail', article_id=a.id) }}">
+            <div class="fw-semibold">{{ a.title }}</div>
+            <div class="small text-muted">{{ a.category.name }} • {{ a.updated_at.strftime("%b %d, %Y") }}</div>
+          </a>
+        {% else %}
+          <div class="list-group-item text-muted">No articles yet. Admin can publish from Admin panel.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-4">
+      <div class="fw-semibold mb-1">Admin quick start</div>
+      <div class="small">After you run migrations, create an admin: <code>flask create-admin</code> then seed: <code>flask seed</code>.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

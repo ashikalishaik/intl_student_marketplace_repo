@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Chat • {{ product.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="h5 mb-0">Chat about: {{ product.title }}</h1>
+    <div class="small text-muted">Keep communication safe. Meet in public places.</div>
+  </div>
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('market.product_detail', product_id=product.id) }}">Back</a>
+</div>
+
+<div class="card shadow-sm mt-3">
+  <div class="card-body" style="max-height: 360px; overflow:auto;">
+    {% for m in messages %}
+      <div class="mb-2">
+        <div class="small text-muted">{{ m.created_at.strftime("%b %d, %H:%M") }} • {% if m.sender_id==current_user.id %}You{% else %}Them{% endif %}</div>
+        <div class="p-2 rounded-3 bg-light border">{{ m.text }}</div>
+      </div>
+    {% else %}
+      <div class="text-muted">Say hi to start the conversation.</div>
+    {% endfor %}
+  </div>
+  <div class="card-footer bg-white">
+    <form method="post" class="d-flex gap-2">
+      {{ form.hidden_tag() }}
+      {{ form.text(class="form-control", rows=1, placeholder="Type your message...") }}
+      {{ form.submit(class="btn btn-dark") }}
+    </form>
+  </div>
+</div>
+{% endblock %}

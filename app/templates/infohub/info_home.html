@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Info Hub{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h1 class="h4 mb-0">Info Hub</h1>
+  {% if current_user.is_authenticated and current_user.is_admin() %}
+    <a class="btn btn-sm btn-dark" href="{{ url_for('info.admin_new_article') }}">New article</a>
+  {% endif %}
+</div>
+
+<form class="row g-2 mt-3" method="get">
+  <div class="col-md-6"><input class="form-control" name="q" value="{{ request.args.get('q','') }}" placeholder="Search articles by title/tags"></div>
+  <div class="col-md-6">
+    <select class="form-select" name="cat">
+      <option value="">All categories</option>
+      {% for c in categories %}
+        <option value="{{ c.id }}" {% if (request.args.get('cat')|int) == c.id %}selected{% endif %}>{{ c.name }}</option>
+
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-12"><button class="btn btn-outline-dark">Filter</button></div>
+</form>
+
+<div class="list-group mt-3">
+  {% for a in articles %}
+    <a class="list-group-item list-group-item-action" href="{{ url_for('info.article_detail', article_id=a.id) }}">
+      <div class="fw-semibold">{{ a.title }}</div>
+      <div class="small text-muted">{{ a.category.name }} • {{ a.updated_at.strftime("%b %d, %Y") }} • Tags: {{ a.tags or "—" }}</div>
+    </a>
+  {% else %}
+    <div class="list-group-item text-muted">No articles yet. Admin can publish one.</div>
+  {% endfor %}
+</div>
+{% endblock %}
