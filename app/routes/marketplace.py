@@ -195,3 +195,44 @@ def inbox():
     ).order_by(Conversation.created_at.desc()).all()
     products = {c.product_id: Product.query.get(c.product_id) for c in convs}
     return render_template("marketplace/inbox.html", convs=convs, products=products)
+
+@market_bp.route("/conversations/<int:conversation_id>", methods=["GET", "POST"])
+@login_required
+def conversation_detail(conversation_id):
+    convo = Conversation.query.get_or_404(conversation_id)
+
+    # allow only buyer or seller to view
+    if current_user.id not in (convo.buyer_id, convo.seller_id):
+        abort(403)
+
+    product = Product.query.get(convo.product_id)
+
+    if request.method == "POST":
+        text = (request.form.get("message") or "").strip()
+        if not text:
+            flash("Message cannot be empty.", "warning")
+            return redirect(url_for("market.conversation_detail", conversation_id=convo.id))
+
+        msg = Message(
+            conversation_id=convo.id,
+            sender_id=current_user.id,
+            text=text  # IMPORTANT: change to your actual column name if not 'content'
+        )
+        db.session.add(msg)
+        db.session.commit()
+        return redirect(url_for("market.conversation_detail", conversation_id=convo.id))
+
+    # IMPORTANT: do NOT filter by sender_id
+    messages = (Message.query
+                .filter_by(conversation_id=convo.id)
+                .order_by(Message.created_at.asc() if hasattr(Message, "created_at") else Message.id.asc())
+                .all())
+
+    return render_template(
+        "marketplace/conversation_detail.html",
+        convo=convo,
+        product=product,
+        messages=messages
+    )
+
+
