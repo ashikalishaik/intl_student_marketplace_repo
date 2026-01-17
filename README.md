@@ -1,87 +1,135 @@
-# intl_student_marketplace_repo
+# International Student Marketplace (Flask)
 
-<<<<<<< HEAD
-# intl_student_marketplace_repo
-=======
-# StudentMarket (Flask) — International Student Marketplace + Info Hub
+This project is a full-stack web application built with Flask that provides a marketplace and information hub for international students. It includes user authentication, product listings, admin management, order handling, and messaging between users. The application is designed as a functional MVP that demonstrates real-world backend patterns such as role-based access, CRUD operations, relational models, and modular routing.
 
-This is a complete local MVP web app:
-- Auth (register/login/logout)
-- Marketplace (browse/search, product detail, create listing, my listings)
-- Admin approval flow for listings
-- Cart + demo checkout (creates an order; no payments)
-- Info Hub (articles, categories, search, bookmarks)
-- Messaging (buyer ↔ seller chat + inbox)
+## Features
 
-## 1) Run locally (Windows / macOS / Linux)
+Authentication  
+Users can register, log in, and log out. Admin users have elevated privileges.
 
-### Prereqs
-- Python 3.10+ recommended
-- Git (optional)
+Marketplace  
+Users can browse products, view details, create listings, manage their own listings, upload media, and interact with products through cart and checkout flows.
+
+Admin Panel  
+Admins can:
+- View all products  
+- Approve or reject listings  
+- Soft delete or permanently delete content  
+- View all orders  
+- Access user activity  
+
+Orders and Cart  
+Users can add items to cart, place orders, and view their order history. Quantity handling and stock validation are supported.
+
+Info Hub  
+Admins can create and manage articles. Users can browse, search, and bookmark content.
+
+Messaging  
+Buyers and sellers can communicate through a simple internal messaging system.
+
+## Tech Stack
+
+- Python 3  
+- Flask  
+- Flask-SQLAlchemy  
+- Flask-Migrate  
+- Flask-Login  
+- SQLite (local development)  
+- HTML + Jinja templates  
+- Bootstrap for UI  
+
+The project is structured to make migration to PostgreSQL and deployment straightforward.
+
+## Project Structure (High Level)
+
+- `app/` – Core application package  
+  - `models/` – SQLAlchemy models  
+  - `routes/` – Blueprints for auth, marketplace, admin, infohub  
+  - `templates/` – Jinja HTML templates  
+  - `forms.py` – WTForms definitions  
+  - `utils.py` – Decorators and helpers  
+- `migrations/` – Database migration history  
+- `run.py` – Application entry point  
+- `requirements.txt` – Dependencies  
+
+## Running Locally
+
+### Prerequisites
+- Python 3.10 or higher  
+- pip  
+- Git (optional)  
 
 ### Setup
+
+Create and activate virtual environment:
+
+Windows (cmd):
 ```bash
-# 1) go into repo
-cd intl_student_marketplace
-
-# 2) create venv
 python -m venv .venv
+.venv\Scripts\activate
+```
 
-# 3) activate
-# Windows (PowerShell):
-.\.venv\Scripts\Activate.ps1
-# Windows (cmd):
-.\.venv\Scripts\activate.bat
-# macOS/Linux:
+Mac/Linux:
+```bash
+python3 -m venv .venv
 source .venv/bin/activate
-
-# 4) install deps
+```
+Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
-
-### Configure environment
-Copy `.env.example` to `.env` and update secrets:
+Database setup
 ```bash
-copy .env.example .env   # Windows
-# or
-cp .env.example .env     # macOS/Linux
+Set Flask app:
 ```
-
-### Initialize DB
+Windows (PowerShell):
 ```bash
-# set flask app
-# Windows PowerShell:
 $env:FLASK_APP="run.py"
-# macOS/Linux:
+```
+Mac/Linux:
+```bash
 export FLASK_APP=run.py
-
-# create tables
-flask db init
-flask db migrate -m "init"
+```
+Run migrations:
+```bash
 flask db upgrade
 ```
-
-### Create admin + seed data
+(Optional) Create admin and seed sample data:
 ```bash
 flask create-admin
 flask seed
 ```
-
-### Run
+Run the app
 ```bash
 python run.py
 ```
+Open in browser:
+http://127.0.0.1:5000
 
-Open: http://127.0.0.1:5000
+### Development Notes
 
-## 2) How to use
-- Register as a student (or login as admin you created)
-- Student creates a listing: Marketplace → Sell (it goes to `pending`)
-- Admin approves listings: Admin dashboard → Approve
-- Add items to cart → Checkout (demo)
-- Info Hub: Admin can publish new articles; students can bookmark
+- SQLite is used for development simplicity.
 
-## Notes
-- This uses image URLs for product images in MVP (simple + safe). Later we can implement file uploads.
-- SQLite is default for local dev. For production, switch `DATABASE_URL` to PostgreSQL.
->>>>>>> 5491fee (Initial commit: StudentMarket Flask MVP)
+- Models and migrations are compatible with PostgreSQL.
+
+- Role-based access is implemented using decorators.
+
+- The admin panel is custom-built to demonstrate control over architecture.
+
+- The project focuses on backend logic and system design rather than UI polish.
+
+### Future Improvements
+
+- PostgreSQL integration
+
+- Cloud file storage (S3 or similar)
+
+- API layer (FastAPI or Flask REST)
+
+- React frontend
+
+- Payment integration
+
+- CI/CD pipeline
+
+- Deployment on cloud platforms
