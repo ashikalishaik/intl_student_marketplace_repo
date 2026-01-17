@@ -8,13 +8,20 @@
 
     {% set main_img = imgs[0].url if imgs else "https://picsum.photos/seed/item/900/700" %}
 
-    <img src="{{ main_img }}" class="img-fluid rounded-4 border" alt="product">
+    <img id="mainProductImage" src="{{ main_img }}" class="img-fluid rounded-4 border" alt="product">
 
     {% if imgs|length > 1 %}
       <div class="d-flex gap-2 mt-3 flex-wrap">
         {% for m in imgs %}
-          <img src="{{ m.url }}" style="width:72px;height:72px;object-fit:cover;" class="rounded border" alt="thumb">
+          <img
+            src="{{ m.url }}"
+            data-full="{{ m.url }}"
+            class="rounded border thumb-img"
+            style="width:72px;height:72px;object-fit:cover;cursor:pointer;"
+            alt="thumb"
+          >
         {% endfor %}
+
       </div>
     {% endif %}
 
@@ -51,4 +58,24 @@
     {% endif %}
   </div>
 </div>
+
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const main = document.getElementById("mainProductImage");
+    const thumbs = document.querySelectorAll(".thumb-img");
+
+    thumbs.forEach(t => {
+      t.addEventListener("click", () => {
+        const nextSrc = t.getAttribute("data-full") || t.getAttribute("src");
+        if (nextSrc && main) main.src = nextSrc;
+
+        thumbs.forEach(x => x.classList.remove("border-primary"));
+        t.classList.add("border-primary");
+      });
+    });
+  });
+</script>
+
 {% endblock %}
