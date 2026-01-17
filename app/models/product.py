@@ -16,10 +16,22 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     category = db.relationship("Category", lazy=True)
-    images = db.relationship("ProductImage", backref="product", cascade="all, delete-orphan", lazy=True)
+    media = db.relationship(
+        "ProductMedia",
+        backref="product",
+        cascade="all, delete-orphan",
+        lazy=True,
+        order_by="ProductMedia.sort_order"
+    )
 
-class ProductImage(db.Model):
-    __tablename__ = "product_images"
+
+class ProductMedia(db.Model):
+    __tablename__ = "product_media"
+
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
-    image_url = db.Column(db.String(500), nullable=False)
+
+    media_type = db.Column(db.String(20), nullable=False)  # image / video
+    url = db.Column(db.String(500), nullable=False)
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

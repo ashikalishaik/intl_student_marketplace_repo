@@ -29,7 +29,7 @@ def register_cli(app):
     @app.cli.command("seed")
     def seed():
         """Seed starter categories and sample articles/products (safe for dev)."""
-        from .models import Article, Product, ProductImage
+        from .models import Article, Product, ProductMedia
         from datetime import datetime
         import random
         from decimal import Decimal
@@ -95,7 +95,13 @@ def register_cli(app):
                     )
                     db.session.add(p)
                     db.session.commit()
-                    db.session.add(ProductImage(product_id=p.id, image_url="https://picsum.photos/seed/lamp/800/600"))
+                    db.session.add(ProductMedia(
+                        product_id=p.id,
+                        media_type="image",
+                        url="https://picsum.photos/seed/lamp/800/600",
+                        sort_order=0
+                    ))
+
                     db.session.commit()
 
         print("Seed complete.")

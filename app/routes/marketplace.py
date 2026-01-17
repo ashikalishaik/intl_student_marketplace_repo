@@ -102,12 +102,6 @@ def sell():
 
         db.session.commit()
 
-
-        if form.image_url.data.strip():
-            img = ProductImage(product_id=product.id, image_url=form.image_url.data.strip())
-            db.session.add(img)
-            db.session.commit()
-
         flash("Listing submitted for review. It will appear after admin approval.", "success")
         return redirect(url_for("market.my_listings"))
 

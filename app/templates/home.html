@@ -37,7 +37,8 @@
       {% for p in products %}
       <div class="col">
         <div class="card h-100 shadow-sm">
-          {% set img = p.images[0].image_url if p.images else "https://picsum.photos/seed/item/800/600" %}
+          {% set imgs = p.media | selectattr("media_type", "equalto", "image") | list %}
+          {% set img = imgs[0].url if imgs else "https://picsum.photos/seed/item/800/600" %}
           <img src="{{ img }}" class="card-img-top" alt="product">
           <div class="card-body">
             <div class="d-flex justify-content-between">

@@ -5,6 +5,8 @@ from ..extensions import db, login_manager
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
+    is_admin = db.Column(db.Boolean, default=False)
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
