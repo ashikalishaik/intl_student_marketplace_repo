@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required
 from ..extensions import db
-from ..models import Product, Category
-from ..forms import CategoryForm
+from ..models import Product, Category, Article
+from ..forms import CategoryForm, AdminProductEditForm
 from ..utils import admin_required
+from datetime import datetime
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -51,3 +52,77 @@ def new_category():
         flash("Category added.", "success")
         return redirect(url_for("admin.dashboard"))
     return render_template("admin/new_category.html", form=form)
+
+@admin_bp.route("/products")
+@login_required
+@admin_required
+def products_list():
+    show = request.args.get("show", "active")  # active | deleted | all
+    q = Product.query
+
+    if show == "active":
+        q = q.filter(Product.is_deleted == False)
+    elif show == "deleted":
+        q = q.filter(Product.is_deleted == True)
+
+    products = q.order_by(Product.created_at.desc()).all()
+    return render_template("admin/products_list.html", products=products, show=show)
+
+
+@admin_bp.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def edit_product(product_id):
+    p = Product.query.get_or_404(product_id)
+    form = AdminProductEditForm(obj=p)
+    form.category_id.choices = [(c.id, f"{c.type} / {c.name}") for c in Category.query.order_by(Category.type.asc(), Category.name.asc()).all()]
+
+    if form.validate_on_submit():
+        p.title = form.title.data.strip()
+        p.description = form.description.data
+        p.price = form.price.data
+        p.condition = form.condition.data
+        p.city = form.city.data.strip()
+        p.category_id = form.category_id.data
+        p.status = form.status.data
+        db.session.commit()
+        flash("Product updated.", "success")
+        return redirect(url_for("admin.products_list"))
+
+    return render_template("admin/edit_product.html", form=form, product=p)
+
+
+@admin_bp.route("/products/<int:product_id>/soft-delete", methods=["POST"])
+@login_required
+@admin_required
+def soft_delete_product(product_id):
+    p = Product.query.get_or_404(product_id)
+    p.is_deleted = True
+    p.deleted_at = datetime.utcnow()
+    db.session.commit()
+    flash("Product soft-deleted.", "warning")
+    return redirect(url_for("admin.products_list"))
+
+
+@admin_bp.route("/products/<int:product_id>/restore", methods=["POST"])
+@login_required
+@admin_required
+def restore_product(product_id):
+    p = Product.query.get_or_404(product_id)
+    p.is_deleted = False
+    p.deleted_at = None
+    db.session.commit()
+    flash("Product restored.", "success")
+    return redirect(url_for("admin.products_list", show="deleted"))
+
+
+@admin_bp.route("/products/<int:product_id>/hard-delete", methods=["POST"])
+@login_required
+@admin_required
+def hard_delete_product(product_id):
+    p = Product.query.get_or_404(product_id)
+    db.session.delete(p)
+    db.session.commit()
+    flash("Product permanently deleted.", "danger")
+    return redirect(url_for("admin.products_list", show="deleted"))
+

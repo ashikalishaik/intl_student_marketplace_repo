@@ -18,7 +18,8 @@ def products():
     city = request.args.get("city", "").strip()
     cat = request.args.get("cat", type=int)
 
-    query = Product.query.filter(Product.status == "approved")
+    query = Product.query.filter(Product.status == "approved", Product.is_deleted == False)
+
     if q:
         query = query.filter(Product.title.ilike(f"%{q}%"))
     if city:

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Admin - Products{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="h4 mb-0">Admin: Products</h2>
+
+  <div class="btn-group">
+    <a class="btn btn-outline-dark btn-sm" href="{{ url_for('admin.products_list', show='active') }}">Active</a>
+    <a class="btn btn-outline-dark btn-sm" href="{{ url_for('admin.products_list', show='deleted') }}">Deleted</a>
+    <a class="btn btn-outline-dark btn-sm" href="{{ url_for('admin.products_list', show='all') }}">All</a>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table table-sm align-middle">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Deleted?</th>
+        <th class="text-end">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.title }}</td>
+        <td><span class="badge text-bg-secondary">{{ p.status }}</span></td>
+        <td>
+          {% if p.is_deleted %}
+            <span class="badge text-bg-warning">Yes</span>
+          {% else %}
+            <span class="badge text-bg-success">No</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {% if not p.is_deleted %}
+            <form class="d-inline" method="post" action="{{ url_for('admin.soft_delete_product', product_id=p.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-outline-warning btn-sm">Soft Delete</button>
+            </form>
+          {% else %}
+            <form class="d-inline" method="post" action="{{ url_for('admin.restore_product', product_id=p.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-outline-success btn-sm">Restore</button>
+            </form>
+
+            <form class="d-inline" method="post" action="{{ url_for('admin.hard_delete_product', product_id=p.id) }}"
+                  onsubmit="return confirm('Hard delete permanently? This cannot be undone.');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-outline-danger btn-sm">Hard Delete</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

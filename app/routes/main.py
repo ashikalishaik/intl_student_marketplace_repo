@@ -10,7 +10,8 @@ def home():
     city = request.args.get("city", "").strip()
     cat = request.args.get("cat", type=int)
 
-    products_query = Product.query.filter(Product.status == "approved")
+    products_query = Product.query.filter(Product.status == "approved", Product.is_deleted == False)
+
     if q:
         products_query = products_query.filter(Product.title.ilike(f"%{q}%"))
     if city:

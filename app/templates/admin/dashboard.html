@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Admin{% endblock %}
 {% block content %}
-<h1 class="h4">Admin dashboard</h1>
+<h1 class="h4">Admin dashboard <a class="btn btn-dark" href="{{ url_for('admin.products_list') }}">Manage Products</a></h1>
 
 <div class="row g-4 mt-1">
   <div class="col-lg-7">
@@ -40,6 +40,7 @@
   <div class="col-lg-5">
     <div class="card shadow-sm">
       <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        
         <strong>Categories</strong>
         <a class="btn btn-sm btn-dark" href="{{ url_for('admin.new_category') }}">Add</a>
       </div>
