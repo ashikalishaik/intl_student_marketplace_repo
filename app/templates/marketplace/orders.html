@@ -6,18 +6,19 @@
 <div class="table-responsive mt-3">
   <table class="table align-middle">
     <thead>
-      <tr><th>#</th><th>Total</th><th>Status</th><th>Created</th></tr>
+      <tr><th>#</th><th>Total</th><th>Status</th><th>Created</th><th></th></tr>
     </thead>
     <tbody>
       {% for o in orders %}
       <tr>
-        <td>{{ o.id }}</td>
+        <td><a href="{{ url_for('market.order_detail', order_id=o.id) }}" class="text-decoration-none">#{{ o.id }}</a></td>
         <td>${{ "%.2f"|format(o.total) }}</td>
         <td><span class="badge text-bg-secondary">{{ o.status }}</span></td>
         <td class="small text-muted">{{ o.created_at.strftime("%b %d, %Y %H:%M") }}</td>
+        <td class="text-end"><a class="btn btn-outline-dark btn-sm" href="{{ url_for('market.order_detail', order_id=o.id) }}">View</a></td>
       </tr>
       {% else %}
-      <tr><td colspan="4" class="text-muted">No orders yet.</td></tr>
+      <tr><td colspan="5" class="text-muted">No orders yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

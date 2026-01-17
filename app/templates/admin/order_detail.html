@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Admin - Order #{{ order.id }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="h4 mb-1">Order #{{ order.id }}</h1>
+    <div class="small text-muted">
+      Buyer: {% if order.buyer %}{{ order.buyer.name }} ({{ order.buyer.email }}){% else %}#{{ order.buyer_id }}{% endif %}
+      • Placed {{ order.created_at.strftime("%b %d, %Y %H:%M") }}
+    </div>
+  </div>
+  <div>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.orders_list') }}">Back to orders</a>
+  </div>
+</div>
+
+<hr>
+
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="text-center" style="width:120px">Qty</th>
+        <th class="text-end" style="width:140px">Unit price</th>
+        <th class="text-end" style="width:140px">Line total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+        {% set i = r.item %}
+        <tr>
+          <td>#{{ i.product_id }}</td>
+          <td>{{ i.product.title if i.product else "Deleted product" }}</td>
+          <td class="text-center">{{ r.qty }}</td>
+          <td class="text-end">${{ "%.2f"|format(r.unit_price) }}</td>
+          <td class="text-end">${{ "%.2f"|format(r.line_total) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="d-flex justify-content-end">
+  <div class="border rounded p-3" style="min-width:280px">
+    <div class="d-flex justify-content-between"><span class="text-muted">Subtotal</span><span>${{ "%.2f"|format(grand_total) }}</span></div>
+    <hr class="my-2">
+    <div class="d-flex justify-content-between fw-semibold"><span>Total</span><span>${{ "%.2f"|format(order.total_amount) }}</span></div>
+  </div>
+</div>
+
+{% endblock %}

@@ -22,8 +22,21 @@ class Order(db.Model):
     total = db.Column(db.Numeric(10, 2), default=0)
     status = db.Column(db.String(20), default="created")  # created/cancelled/completed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
+    @property
+    def total_amount(self) -> float:
+        """
+        Sum of all line items (quantity * unit_price).
+        Works even if you add/remove items later.
+        """
+        total = 0.0
+        for item in getattr(self, "items", []) or []:
+            qty = getattr(item, "qty", 0) or 0
+            price = getattr(item, "price_snapshot", 0.0) or 0.0
+            total += float(qty) * float(price)
+        return round(total, 2)
     buyer = db.relationship("User", lazy=True)
+    items = db.relationship("OrderItem", backref="order_parent", lazy=True, cascade="all, delete-orphan")
+
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"

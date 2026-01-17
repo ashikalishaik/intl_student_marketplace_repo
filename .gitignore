@@ -1,18 +1,10 @@
-# Virtual env
-.venv/
-
-# Python cache
 __pycache__/
 *.pyc
-
-# Flask instance (local db, secrets)
+.venv/
+venv/
+env/
 instance/
 *.db
-
-# Migrations cache
-migrations/__pycache__/
-migrations/versions/__pycache__/
-
-# Env files
+*.sqlite3
 .env
-.env.*
+.DS_Store

@@ -16,6 +16,7 @@ class Product(db.Model):
     status = db.Column(db.String(20), default="pending")  # pending/approved/rejected/sold
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     category = db.relationship("Category", lazy=True)
+    quantity = db.Column(db.Integer, nullable=False, default=1, server_default="1")
     media = db.relationship(
         "ProductMedia",
         backref="product",
@@ -35,3 +36,4 @@ class ProductMedia(db.Model):
     url = db.Column(db.String(500), nullable=False)
     sort_order = db.Column(db.Integer, default=0, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    

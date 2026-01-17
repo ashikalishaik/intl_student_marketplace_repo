@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ product.title }}{% endblock %}
+
 {% block content %}
 <div class="row g-4">
   <div class="col-lg-6">
@@ -8,20 +9,15 @@
 
     {% set main_img = imgs[0].url if imgs else "https://picsum.photos/seed/item/900/700" %}
 
-    <img id="mainProductImage" src="{{ main_img }}" class="img-fluid rounded-4 border" alt="product">
+    <img id="mainImage" src="{{ main_img }}" class="img-fluid rounded-4 border" alt="product">
 
     {% if imgs|length > 1 %}
       <div class="d-flex gap-2 mt-3 flex-wrap">
         {% for m in imgs %}
-          <img
-            src="{{ m.url }}"
-            data-full="{{ m.url }}"
-            class="rounded border thumb-img"
-            style="width:72px;height:72px;object-fit:cover;cursor:pointer;"
-            alt="thumb"
-          >
+          <button type="button" class="p-0 border-0 bg-transparent" onclick="swapMainImage('{{ m.url }}')">
+            <img src="{{ m.url }}" style="width:72px;height:72px;object-fit:cover;" class="rounded border" alt="thumb">
+          </button>
         {% endfor %}
-
       </div>
     {% endif %}
 
@@ -34,22 +30,46 @@
         </video>
       </div>
     {% endif %}
-
   </div>
+
   <div class="col-lg-6">
-    <div class="d-flex gap-2 align-items-center">
+    <div class="d-flex gap-2 align-items-center flex-wrap">
       <span class="badge text-bg-secondary">{{ product.category.name }}</span>
       <span class="badge text-bg-light border">{{ product.condition }}</span>
       <span class="small text-muted">{{ product.city }}</span>
+
+      {% if current_user.is_authenticated and (current_user.id == product.seller_id or current_user.is_admin()) %}
+        <a class="btn btn-outline-dark btn-sm ms-auto" href="{{ url_for('market.edit_product', product_id=product.id) }}">Edit</a>
+      {% endif %}
     </div>
+
     <h1 class="h3 mt-2">{{ product.title }}</h1>
     <div class="h4">${{ "%.2f"|format(product.price) }}</div>
-    <p class="text-muted">{{ product.description }}</p>
+
+    {% if product.quantity is not none %}
+      <div class="small text-muted">In stock: {{ product.quantity }}</div>
+    {% endif %}
+
+    <p class="text-muted mt-2">{{ product.description }}</p>
 
     {% if current_user.is_authenticated %}
-      <form method="post" action="{{ url_for('market.cart_add', product_id=product.id) }}">
+      <form method="post" action="{{ url_for('market.cart_add', product_id=product.id) }}" class="d-flex gap-2 align-items-end flex-wrap">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button class="btn btn-dark">Add to cart</button>
+
+          <div>
+            <label class="form-label small mb-1">Qty</label>
+            <input
+              type="number"
+              name="qty"
+              class="form-control"
+              value="1"
+              min="1"
+              {% if product.quantity is not none %}max="{{ product.quantity }}"{% endif %}
+              style="max-width: 120px;"
+            >
+          </div>
+
+          <button class="btn btn-dark" {% if product.quantity is not none and product.quantity <= 0 %}disabled{% endif %}>Add to cart</button>
           <a class="btn btn-outline-dark" href="{{ url_for('market.contact_seller', product_id=product.id) }}">Contact seller</a>
       </form>
 
@@ -59,23 +79,10 @@
   </div>
 </div>
 
-</div>
-
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const main = document.getElementById("mainProductImage");
-    const thumbs = document.querySelectorAll(".thumb-img");
-
-    thumbs.forEach(t => {
-      t.addEventListener("click", () => {
-        const nextSrc = t.getAttribute("data-full") || t.getAttribute("src");
-        if (nextSrc && main) main.src = nextSrc;
-
-        thumbs.forEach(x => x.classList.remove("border-primary"));
-        t.classList.add("border-primary");
-      });
-    });
-  });
+  function swapMainImage(url) {
+    const img = document.getElementById('mainImage');
+    if (img) img.src = url;
+  }
 </script>
-
 {% endblock %}

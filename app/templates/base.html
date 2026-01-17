@@ -30,6 +30,7 @@
       <ul class="navbar-nav ms-auto">
         {% if current_user.is_authenticated %}
           <li class="nav-item"><a class="nav-link" href="{{ url_for('market.cart_view') }}">Cart</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('market.orders') }}">My Orders</a></li>
           <li class="nav-item"><span class="navbar-text me-2">Hi, {{ current_user.name }}</span></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
         {% else %}

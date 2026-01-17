@@ -3,8 +3,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from ..extensions import db
 from ..models import Product, Category, ProductMedia, Cart, CartItem, Order, OrderItem, Conversation, Message
-from ..forms import ProductForm, MessageForm
-from ..utils import admin_required
+from ..forms import ProductForm, MessageForm, ProductEditForm
+from ..utils import admin_required, require_can_edit_product, require_can_view_order
 import os
 from werkzeug.utils import secure_filename
 from flask import current_app
@@ -51,6 +51,7 @@ def sell():
             title=form.title.data.strip(),
             description=form.description.data.strip(),
             price=form.price.data,
+            quantity=form.quantity.data,
             condition=form.condition.data,
             city=(form.city.data.strip() or current_user.city),
             status="pending"
@@ -140,6 +141,21 @@ def cart_add(product_id):
     product = Product.query.get_or_404(product_id)
     if product.status != "approved":
         abort(404)
+
+    # qty comes from the product page (default 1)
+    try:
+        qty = int(request.form.get("qty", 1))
+    except (TypeError, ValueError):
+        qty = 1
+    if qty < 1:
+        qty = 1
+
+    # basic stock guard
+    if product.quantity is not None and product.quantity <= 0:
+        flash("Out of stock.", "warning")
+        return redirect(url_for("market.product_detail", product_id=product_id))
+    if product.quantity is not None and qty > product.quantity:
+        qty = product.quantity
     cart = Cart.query.filter_by(user_id=current_user.id).first()
     if not cart:
         cart = Cart(user_id=current_user.id)
@@ -148,9 +164,13 @@ def cart_add(product_id):
 
     item = CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
     if item:
-        item.qty += 1
+        # do not exceed stock (if quantity is tracked)
+        new_qty = item.qty + qty
+        if product.quantity is not None:
+            new_qty = min(new_qty, product.quantity)
+        item.qty = new_qty
     else:
-        item = CartItem(cart_id=cart.id, product_id=product_id, qty=1)
+        item = CartItem(cart_id=cart.id, product_id=product_id, qty=qty)
         db.session.add(item)
     db.session.commit()
     flash("Added to cart.", "success")
@@ -187,9 +207,21 @@ def checkout():
     db.session.add(order)
     db.session.commit()
 
+    # Validate stock and create order items
     for it in items:
-        oi = OrderItem(order_id=order.id, product_id=it.product_id, price_snapshot=it.product.price, qty=it.qty)
+        p = it.product
+        if p.quantity is not None and it.qty > p.quantity:
+            flash(f"Not enough stock for '{p.title}'. Available: {p.quantity}", "danger")
+            return redirect(url_for("market.cart_view"))
+
+    for it in items:
+        p = it.product
+        oi = OrderItem(order_id=order.id, product_id=it.product_id, price_snapshot=p.price, qty=it.qty)
         db.session.add(oi)
+
+        # decrement stock (demo behavior)
+        if p.quantity is not None:
+            p.quantity = max(0, p.quantity - it.qty)
     # clear cart
     for it in items:
         db.session.delete(it)
@@ -203,6 +235,27 @@ def checkout():
 def orders():
     orders = Order.query.filter_by(buyer_id=current_user.id).order_by(Order.created_at.desc()).all()
     return render_template("marketplace/orders.html", orders=orders)
+
+
+@market_bp.route("/orders/<int:order_id>")
+@login_required
+def order_detail(order_id):
+    order = Order.query.get_or_404(order_id)
+    require_can_view_order(order)
+
+    items = (
+        OrderItem.query
+        .filter_by(order_id=order.id)
+        .all()
+    )
+    # Compute totals in Python to avoid DB-specific numeric casting issues
+    subtotal = sum((Decimal(str(i.price_snapshot)) * i.qty) for i in items) if items else Decimal("0")
+    return render_template(
+        "marketplace/order_detail.html",
+        order=order,
+        items=items,
+        subtotal=subtotal,
+    )
 
 # Messaging (basic)
 @market_bp.route("/contact-seller/<int:product_id>", methods=["GET","POST"])
@@ -280,4 +333,42 @@ def conversation_detail(conversation_id):
         messages=messages
     )
 
+@market_bp.route("/products/<int:product_id>/edit", methods=["GET", "POST"])
+@login_required
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    # permission check: owner OR admin
+    require_can_edit_product(product)
+
+    form = ProductEditForm(obj=product)
+
+    # categories dropdown
+    form.category_id.choices = [
+        (c.id, f"{c.type} / {c.name}" if hasattr(c, "type") else c.name)
+        for c in Category.query.order_by(Category.name.asc()).all()
+    ]
+
+    # if NOT admin, don't allow status changes
+    if not current_user.is_admin():
+        form.status.render_kw = {"disabled": True}
+
+    if form.validate_on_submit():
+        product.title = form.title.data.strip()
+        product.description = form.description.data
+        product.price = form.price.data
+        product.condition = form.condition.data
+        product.city = (form.city.data or "").strip()
+        product.category_id = form.category_id.data
+        product.quantity = form.quantity.data
+
+        # admin can change status, sellers cannot
+        if current_user.is_admin():
+            product.status = form.status.data
+
+        db.session.commit()
+        flash("Product updated successfully.", "success")
+        return redirect(url_for("market.product_detail", product_id=product.id))
+
+    return render_template("marketplace/edit_product.html", form=form, product=product)
 

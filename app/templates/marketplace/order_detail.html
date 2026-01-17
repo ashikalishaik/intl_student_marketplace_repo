@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Order #{{ order.id }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    <h1 class="h4 mb-1">Order #{{ order.id }}</h1>
+    <div class="small text-muted">Placed {{ order.created_at.strftime("%b %d, %Y %H:%M") }} • <span class="badge text-bg-secondary">{{ order.status }}</span></div>
+  </div>
+  <a class="btn btn-outline-dark btn-sm" href="{{ url_for('market.orders') }}">Back to orders</a>
+</div>
+
+<div class="row g-4 mt-1">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Items</h2>
+        <div class="table-responsive">
+          <table class="table align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th class="text-end">Unit price</th>
+                <th class="text-end">Qty</th>
+                <th class="text-end">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for i in items %}
+                <tr>
+                  <td>
+                    {% if i.product %}
+                      <a class="text-decoration-none" href="{{ url_for('market.product_detail', product_id=i.product.id) }}">{{ i.product.title }}</a>
+                    {% else %}
+                      <span class="text-muted">(Product removed)</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">${{ "%.2f"|format(i.price_snapshot) }}</td>
+                  <td class="text-end">{{ i.qty }}</td>
+                  <td class="text-end">${{ "%.2f"|format(i.price_snapshot * i.qty) }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Summary</h2>
+        <div class="d-flex justify-content-between">
+          <div class="text-muted">Total</div>
+          <div class="fw-semibold">${{ "%.2f"|format(order.total) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

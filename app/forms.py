@@ -24,6 +24,7 @@ class ProductForm(FlaskForm):
     description = TextAreaField("Description")
     price = DecimalField("Price (USD)", validators=[DataRequired(), NumberRange(min=0)], places=2)
     condition = SelectField("Condition", choices=[("New","New"), ("Like New","Like New"), ("Used","Used")])
+    quantity = IntegerField("Quantity", validators=[DataRequired(), NumberRange(min=1, max=9999)])
     city = StringField("City", validators=[Length(max=120)])
     category_id = SelectField("Category", coerce=int, validators=[DataRequired()])
 
@@ -64,6 +65,7 @@ class AdminProductEditForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=200)])
     description = TextAreaField("Description")
     price = DecimalField("Price (USD)", validators=[DataRequired(), NumberRange(min=0)], places=2)
+    quantity = IntegerField("Quantity", validators=[DataRequired(), NumberRange(min=1, max=9999)])
     condition = SelectField("Condition", choices=[("New","New"), ("Like New","Like New"), ("Used","Used")])
     city = StringField("City", validators=[Length(max=120)])
     category_id = SelectField("Category", coerce=int, validators=[DataRequired()])
@@ -79,7 +81,7 @@ class ProductEditForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=200)])
     description = TextAreaField("Description", validators=[DataRequired()])
     price = DecimalField("Price (USD)", validators=[DataRequired(), NumberRange(min=0)], places=2)
-
+    quantity = IntegerField("Quantity", validators=[DataRequired(), NumberRange(min=1, max=9999)])
     condition = SelectField(
         "Condition",
         choices=[("New", "New"), ("Like New", "Like New"), ("Used", "Used")],

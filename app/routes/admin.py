@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required
 from ..extensions import db
-from ..models import Product, Category, Article
+from ..models import Product, Category, Article, Order, OrderItem, User
 from ..forms import CategoryForm, AdminProductEditForm
 from ..utils import admin_required
 from datetime import datetime
+from decimal import Decimal
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -126,3 +127,51 @@ def hard_delete_product(product_id):
     flash("Product permanently deleted.", "danger")
     return redirect(url_for("admin.products_list", show="deleted"))
 
+
+@admin_bp.route("/orders")
+@login_required
+@admin_required
+def orders_list():
+    """Admin: view all orders (optionally filter by buyer_id)."""
+    buyer_id = request.args.get("buyer_id", type=int)
+    q = Order.query
+    if buyer_id:
+        q = q.filter(Order.buyer_id == buyer_id)
+
+    orders = q.order_by(Order.created_at.desc()).all()
+    users = User.query.order_by(User.name.asc()).all()
+    return render_template("admin/orders_list.html", orders=orders, users=users, buyer_id=buyer_id)
+
+
+@admin_bp.route("/orders/<int:order_id>")
+@login_required
+@admin_required
+def order_detail(order_id):
+    o = Order.query.get_or_404(order_id)
+    buyer = User.query.get(o.buyer_id)
+
+    items = OrderItem.query.filter_by(order_id=o.id).all()
+
+    rows = []
+    grand_total = Decimal("0.00")
+
+    for it in items:
+        unit = Decimal(str(it.price_snapshot or 0))
+        qty = int(it.qty or 0)
+        line_total = unit * qty
+        grand_total += line_total
+
+        rows.append({
+            "item": it,
+            "unit_price": unit,
+            "qty": qty,
+            "line_total": line_total
+        })
+
+    return render_template(
+        "admin/order_detail.html",
+        order=o,
+        buyer=buyer,
+        rows=rows,
+        grand_total=grand_total
+    )

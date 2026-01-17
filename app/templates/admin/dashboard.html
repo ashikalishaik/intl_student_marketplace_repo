@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Admin{% endblock %}
 {% block content %}
-<h1 class="h4">Admin dashboard <a class="btn btn-dark" href="{{ url_for('admin.products_list') }}">Manage Products</a></h1>
+<h1 class="h4">Admin dashboard
+  <a class="btn btn-dark btn-sm ms-2" href="{{ url_for('admin.products_list') }}">Manage Products</a>
+  <a class="btn btn-outline-dark btn-sm ms-2" href="{{ url_for('admin.orders_list') }}">Manage Orders</a>
+</h1>
 
 <div class="row g-4 mt-1">
   <div class="col-lg-7">
