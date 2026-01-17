@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, DecimalField, SelectField, IntegerField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, NumberRange
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import MultipleFileField
 
 class RegisterForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired(), Length(max=120)])
@@ -24,8 +26,19 @@ class ProductForm(FlaskForm):
     condition = SelectField("Condition", choices=[("New","New"), ("Like New","Like New"), ("Used","Used")])
     city = StringField("City", validators=[Length(max=120)])
     category_id = SelectField("Category", coerce=int, validators=[DataRequired()])
-    image_url = StringField("Image URL (optional)", validators=[Length(max=500)])
+
+    images = MultipleFileField(
+        "Product Images (choose multiple)",
+        validators=[FileAllowed(["jpg", "jpeg", "png", "webp"], "Images only!")]
+    )
+
+    video = FileField(
+        "Product Video (optional)",
+        validators=[FileAllowed(["mp4", "webm", "mov"], "MP4/WEBM/MOV only!")]
+    )
+
     submit = SubmitField("Save")
+
 
 class ArticleForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=250)])

@@ -2,9 +2,13 @@ from decimal import Decimal
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from ..extensions import db
-from ..models import Product, Category, ProductImage, Cart, CartItem, Order, OrderItem, Conversation, Message
+from ..models import Product, Category, ProductMedia, Cart, CartItem, Order, OrderItem, Conversation, Message
 from ..forms import ProductForm, MessageForm
 from ..utils import admin_required
+import os
+from werkzeug.utils import secure_filename
+from flask import current_app
+
 
 market_bp = Blueprint("market", __name__, url_prefix="/market")
 
@@ -52,6 +56,52 @@ def sell():
         )
         db.session.add(product)
         db.session.commit()
+
+        # Create folder: app/static/uploads/products/<product_id>/
+        upload_root = current_app.config["UPLOAD_FOLDER"]
+        product_dir = os.path.join(upload_root, "products", str(product.id))
+        os.makedirs(product_dir, exist_ok=True)
+
+        # Save images
+        images = form.images.data or []
+        saved_any = False
+        for idx, file in enumerate(images):
+            if not file:
+                continue
+            filename = secure_filename(file.filename)
+            if not filename:
+                continue
+
+            file_path = os.path.join(product_dir, filename)
+            file.save(file_path)
+
+            rel_path = f"uploads/products/{product.id}/{filename}"
+            db.session.add(ProductMedia(
+                product_id=product.id,
+                media_type="image",
+                url=url_for("static", filename=rel_path),
+                sort_order=idx
+            ))
+            saved_any = True
+
+        # Save video (optional)
+        video = form.video.data
+        if video and video.filename:
+            vname = secure_filename(video.filename)
+            vpath = os.path.join(product_dir, vname)
+            video.save(vpath)
+
+            rel_path = f"uploads/products/{product.id}/{vname}"
+            db.session.add(ProductMedia(
+                product_id=product.id,
+                media_type="video",
+                url=url_for("static", filename=rel_path),
+                sort_order=999
+            ))
+            saved_any = True
+
+        db.session.commit()
+
 
         if form.image_url.data.strip():
             img = ProductImage(product_id=product.id, image_url=form.image_url.data.strip())

@@ -6,7 +6,7 @@
   <div class="col-lg-8">
     <div class="card shadow-sm mt-3">
       <div class="card-body p-4">
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
           {{ form.hidden_tag() }}
           <div class="row g-3">
             <div class="col-md-8">
@@ -34,11 +34,17 @@
               {{ form.city(class="form-control") }}
               <div class="form-text">Leave blank to use your profile city.</div>
             </div>
-            <div class="col-md-6">
-              {{ form.image_url.label(class="form-label") }}
-              {{ form.image_url(class="form-control") }}
-              <div class="form-text">For local MVP, use an image URL (later we can do file upload).</div>
+            <div class="col-12">
+              {{ form.images.label(class="form-label") }}
+              {{ form.images(class="form-control", multiple=True) }}
+              <div class="form-text">Upload multiple images from your computer.</div>
             </div>
+            <div class="col-12">
+              {{ form.video.label(class="form-label") }}
+              {{ form.video(class="form-control") }}
+              <div class="form-text">Optional video upload (mp4/webm/mov).</div>
+            </div>
+
           </div>
           <div class="mt-3">
             {{ form.submit(class="btn btn-dark") }}
