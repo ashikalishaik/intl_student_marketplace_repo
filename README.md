@@ -1,4 +1,4 @@
-# International Student Marketplace (Flask)
+# International Student Marketplace
 
 This project is a full-stack web application built with Flask that provides a marketplace and information hub for international students. It includes user authentication, product listings, admin management, order handling, and messaging between users. The application is designed as a functional MVP that demonstrates real-world backend patterns such as role-based access, CRUD operations, relational models, and modular routing.
 
